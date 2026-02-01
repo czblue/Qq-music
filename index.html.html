@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Qq Music - Pro Soloist v6 (Coordinate Control)</title>
+  <style>
+    /* --- Core Variables --- */
+    :root {
+      --bg: #000000;
+      --panel: #000000;
+      --accent: #a855f7;
+      --accent-glow: 0 0 15px var(--accent);
+      --text: #ffffff;
+      --lcd-bg: #0a0015;
+      --lcd-border: 2px solid var(--accent);
+      --key-white-bg: linear-gradient(to bottom, #f0f0f0 0%, #ffffff 100%);
+      --key-black-bg: linear-gradient(to bottom, #444 0%, #000 100%);
+      --border-radius: 8px;
+      --font-family: "Orbitron", "Segoe UI", sans-serif;
+      --white-w: 52px;
+      --black-w: 34px;
+      --octave-active-bg: #2a0044;
+    }
+
+    /* --- Themes --- */
+    body.theme-cartoon {
+      --bg: #87CEEB; --panel: #FFD700; --accent: #FF4500; --accent-glow: 4px 4px 0px rgba(0,0,0,0.2);
+      --text: #000000; --lcd-bg: #FFFFFF; --lcd-border: 4px solid #FF4500;
+      --key-white-bg: linear-gradient(to bottom, #ffffff 0%, #f0f8ff 100%);
+      --key-black-bg: linear-gradient(to bottom, #333 0%, #333 100%);
+      --octave-active-bg: #ffeb3b;
+      --border-radius: 25px; --font-family: "Comic Sans MS", cursive;
+    }
+    body.theme-pro {
+      --bg: #1a1a1a; --panel: #2c2c2c; --accent: #d4d4d4; --accent-glow: none;
+      --text: #f0f0f0; --lcd-bg: #111; --lcd-border: 1px solid #555;
+      --key-white-bg: linear-gradient(to bottom, #fffff0 0%, #ffffff 100%);
+      --key-black-bg: linear-gradient(to bottom, #1a1a1a 0%, #000 100%);
+      --octave-active-bg: #222;
+      --border-radius: 2px; --font-family: "Times New Roman", serif;
+    }
+    body.theme-nature {
+      --bg: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%); --panel: #e6cca0;
+      --accent: #006994; --accent-glow: 0 0 5px rgba(255,255,255,0.5); --text: #00334e;
+      --lcd-bg: rgba(255,255,255,0.6); --lcd-border: 2px solid #006994;
+      --key-white-bg: linear-gradient(to bottom, #f0faff 0%, #ffffff 100%);
+      --key-black-bg: linear-gradient(to bottom, #006994 0%, #00334e 100%);
+      --octave-active-bg: #004d40;
+      --border-radius: 12px; --font-family: "Georgia", serif;
+    }
+
+    /* --- Layout --- */
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body { 
+      margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-family);
+      min-height: 100vh; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
+      transition: background 0.8s ease, color 0.3s ease; background-attachment: fixed;
+    }
+
+    #themeModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .modal-title { font-size: 28px; color: white; margin-bottom: 30px; text-align: center; }
+    .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; width: 100%; }
+    .theme-card { background: #222; border: 3px solid #444; border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+    .theme-card:hover { transform: translateY(-5px); border-color: #fff; }
+    .card-cartoon { border-color: #FFD700; background: #87CEEB; color: #000; }
+    .card-tech { border-color: #a855f7; background: #000; color: #a855f7; }
+    .card-pro { border-color: #d4d4d4; background: #222; color: #fff; }
+    .card-nature { border-color: #006994; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: #00334e; }
+
+    header { min-height: 110px; background: var(--panel); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; transition: background 0.5s ease; }
+    .brand { font-size: 40px; font-weight: 900; letter-spacing: -2px; text-shadow: var(--accent-glow); color: var(--text); }
+    .header-right { display: flex; align-items: center; gap: 20px; }
+
+    .mode-btn, .display-btn { font-size: 18px; cursor: pointer; color: var(--text); opacity: 0.8; border: 1px solid var(--text); padding: 8px 15px; border-radius: var(--border-radius); font-weight: bold; transition: 0.2s; background: transparent; }
+    .mode-btn.active, .display-btn.active { opacity: 1; background: var(--accent); border-color: var(--accent); color: white; box-shadow: var(--accent-glow); transform: scale(1.05); }
+    .theme-switch-btn { font-size: 14px; background: rgba(255,255,255,0.1); border: 1px solid var(--text); color: var(--text); padding: 5px 10px; border-radius: var(--border-radius); cursor: pointer; }
+    
+    .metro-controls { display: flex; flex-direction: column; align-items: center; gap: 5px; border-left: 1px solid var(--text); padding-left: 15px; }
+    .bpm-slider { width: 100px; accent-color: var(--accent); cursor: pointer; }
+    .bpm-text { font-size: 12px; color: var(--accent); font-weight: bold; }
+
+    .vol-stack { display: flex; flex-direction: column; align-items: center; }
+    .vol-label { font-size: 20px; color: var(--text); opacity: 0.7; font-weight: bold; margin-bottom: 5px; }
+    .vol-grid { display: flex; gap: 5px; }
+    .vol-segment { width: 25px; height: 14px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); cursor: pointer; }
+    .vol-segment.active { background: var(--accent); box-shadow: var(--accent-glow); border-color: var(--accent); }
+
+    .score-rack { width: 100%; min-height: 0; background: rgba(0,0,0,0.2); display: none; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid rgba(0,0,0,0.2); padding: 10px; transition: 0.5s; }
+    .score-rack img { max-width: 100%; height: auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+    .upload-hint { border: 2px dashed var(--accent); padding: 30px; color: var(--text); opacity: 0.7; cursor: pointer; border-radius: var(--border-radius); text-transform: uppercase; }
+
+    .piano-section { padding: 20px 0; display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .lcd-tech { width: 420px; height: 120px; background: var(--lcd-bg); border: var(--lcd-border); border-radius: var(--border-radius); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; transition: 0.4s ease; }
+    .metro-light { width: 20px; height: 20px; background: rgba(0,0,0,0.3); border-radius: 50%; margin-bottom: 10px; border: 2px solid var(--text); }
+    .metro-flash { background: #fff !important; box-shadow: 0 0 20px #fff, 0 0 50px var(--accent) !important; transform: scale(1.3); }
+    .lcd-flash { box-shadow: 0 0 30px var(--accent) !important; }
+    #noteOut { font-size: 36px; font-weight: bold; color: var(--text); }
+    #solOut { font-size: 16px; color: var(--accent); letter-spacing: 2px; }
+
+    body.score-active .score-rack { display: flex; min-height: 300px; }
+    body.score-active .lcd-tech { position: fixed; left: 20px; top: 50%; transform: translateY(-50%) scale(0.7); z-index: 1500; background: var(--lcd-bg); opacity: 0.95; }
+
+    /* Keyboard Styles */
+    .piano-scroll { width: 100%; overflow-x: auto; padding: 10px 0; scroll-behavior: smooth; }
+    .keyboard { position: relative; width: max-content; height: 260px; margin: 0 auto; }
+    .white-keys { display: flex; }
+    .key-white {
+      width: var(--white-w); height: 240px; background: var(--key-white-bg); 
+      border: 1px solid #999; border-radius: 0 0 5px 5px; display: flex; flex-direction: column; 
+      justify-content: flex-end; align-items: center; padding-bottom: 12px; color: #000; cursor: pointer;
+    }
+    .key-white.active { transform: translateY(2px); border-bottom: 5px solid var(--accent); filter: brightness(0.9); }
+    .black-keys { position: absolute; top: 0; left: 0; width: 100%; height: 150px; pointer-events: none; }
+    .key-black {
+      position: absolute; width: var(--black-w); height: 150px; background: var(--key-black-bg);
+      border-radius: 0 0 4px 4px; pointer-events: auto; z-index: 10; display: flex; flex-direction: column; 
+      justify-content: flex-end; align-items: center; padding-bottom: 10px; color: #fff; cursor: pointer;
+    }
+    .key-black.active { transform: translateY(2px); border-bottom: 4px solid var(--accent); filter: brightness(1.2); }
+    
+    .key-tag { font-size: 11px; font-weight: bold; pointer-events: none; margin-bottom: 2px; }
+    
+    .part-label {
+      position: absolute; top: 10px; font-size: 18px; font-weight: 900; 
+      color: var(--accent); text-shadow: var(--accent-glow); pointer-events: none;
+    }
+    
+    .octave-active {
+      background: var(--octave-active-bg) !important;
+      box-shadow: inset 0 0 20px var(--accent);
+    }
+
+    .hide-tags .key-tag { display: none; }
+
+    #dropdownMenu { position: absolute; top: 110px; right: 30px; background: var(--panel); border: 1px solid var(--text); padding: 20px; display: none; flex-direction: column; gap: 15px; z-index: 2000; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .instrument-display { padding: 40px 20px; background: rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 20px; border-top: 1px solid #333; }
+    #fileInput { display: none; }
+    
+    @media(max-width: 768px) { .theme-grid { grid-template-columns: 1fr; } .header-right { gap: 10px; } .brand { font-size: 30px; } }
+  </style>
+</head>
+<body class="theme-tech show-labels">
+  
+  <div id="themeModal">
+    <div class="modal-title">Select Your Piano Style<br><span style="font-size:16px; opacity:0.7">Choose Your Vibe</span></div>
+    <div class="theme-grid">
+      <div class="theme-card card-cartoon" onclick="selectTheme('theme-cartoon')">
+        <div class="theme-name">🌈 Cartoon</div>
+        <div style="font-size:12px; margin-top:5px">Sky Blue / Fun</div>
+      </div>
+      <div class="theme-card card-tech" onclick="selectTheme('theme-tech')">
+        <div class="theme-name">⚡ Cyberpunk</div>
+        <div style="font-size:12px; margin-top:5px">Neon / Professional</div>
+      </div>
+      <div class="theme-card card-pro" onclick="selectTheme('theme-pro')">
+        <div class="theme-name">🎹 Classic Pro</div>
+        <div style="font-size:12px; margin-top:5px">Black & White / Hi-Fi</div>
+      </div>
+      <div class="theme-card card-nature" onclick="selectTheme('theme-nature')">
+        <div class="theme-name">🌊 Ocean Breeze</div>
+        <div style="font-size:12px; margin-top:5px">Seaside / Relaxing</div>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="brand">Qq Music</div>
+    <div class="header-right">
+      <button class="theme-switch-btn" onclick="openThemeModal()">🎨 Theme</button>
+      <div id="scoreBtn" class="mode-btn" onclick="toggleScoreMode()">Score</div>
+      <div class="metro-controls">
+        <div id="metroBtn" class="mode-btn" onclick="toggleMetro()">Metro</div>
+        <input type="range" class="bpm-slider" min="40" max="220" value="120" oninput="updateBPM(this.value)">
+        <span class="bpm-text" id="bpmText">120 BPM</span>
+      </div>
+      <div class="vol-stack">
+        <div class="vol-label">Volume</div>
+        <div class="vol-grid">
+          <div class="vol-segment" id="vol1" onclick="setVol(1)"></div>
+          <div class="vol-segment" id="vol2" onclick="setVol(2)"></div>
+          <div class="vol-segment active" id="vol3" onclick="setVol(3)"></div>
+          <div class="vol-segment" id="vol4" onclick="setVol(4)"></div>
+        </div>
+      </div>
+      <div id="dToggle" class="display-btn active" onclick="toggleDisplay()">Display</div>
+      <div style="font-size:35px; cursor:pointer;" onclick="toggleMenu()">&#9776;</div>
+    </div>
+
+    <div id="dropdownMenu">
+      <label>Instrument:</label>
+      <select id="instSelect" onchange="changeInstrument()" style="padding:10px; background:#222; color:white; border:1px solid var(--accent); font-size: 16px;">
+        <option value="piano">Piano 🎹</option>
+        <option value="violin">Violin 🎻</option>
+        <option value="strings">Strings 🎻</option>
+        <option value="flute">Flute 🪈</option>
+        <option value="guitar">Guitar 🎸</option>
+      </select>
+      <hr style="border-color:#333;">
+      <label style="cursor: pointer;"><input type="checkbox" id="sustainCheck" checked> Sustain</label>
+      <hr style="border-color:#333;">
+      <button class="theme-switch-btn" style="width:100%" onclick="openThemeModal()">Reselect Theme</button>
+    </div>
+  </header>
+
+  <div class="score-rack" id="scoreRack" onclick="document.getElementById('fileInput').click()">
+    <div id="hint" class="upload-hint">Click to Upload Score / Image</div>
+    <img id="scoreImg" src="" style="display:none">
+    <input type="file" id="fileInput" accept="image/*" onchange="loadScore(event)">
+  </div>
+
+  <div class="piano-section">
+    <div class="lcd-tech" id="lcd">
+      <div id="metroLight" class="metro-light"></div>
+      <div id="noteOut">READY</div>
+      <div id="solOut">COORDINATE CTRL</div>
+    </div>
+    <div class="piano-scroll">
+      <div class="keyboard" id="kbRoot">
+        <div class="white-keys" id="whiteKeys"></div>
+        <div class="black-keys" id="blackKeys"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="instrument-display">
+    <div id="instIcon" style="font-size:50px;">🎹</div>
+    <div id="instName" style="font-size:30px; font-weight:bold; color:var(--accent);">PIANO</div>
+  </div>
+
+<script>
+  let aCtx, masterGain, reverbNode;
+  const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const SOL_MAP = { 'C':'Do', 'C#':'Di', 'D':'Re', 'D#':'Ri', 'E':'Mi', 'F':'Fa', 'F#':'Fi', 'G':'Sol', 'G#':'Si', 'A':'La', 'A#':'Li', 'B':'Si' };
+  let metroOn = false, bpm = 120, metroTimer;
+
+  const activeOctaves = new Set(); 
+  const LETTER_MAP = { 'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11 };
+  
+  function selectTheme(themeName) {
+    document.body.className = ''; document.body.classList.add(themeName); document.body.classList.add('show-labels'); 
+    document.getElementById('themeModal').style.display = 'none';
+    if(!aCtx) initApp();
+  }
+
+  function openThemeModal() { document.getElementById('themeModal').style.display = 'flex'; toggleMenu(); }
+
+  function initApp() {
+    aCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = aCtx.createGain(); masterGain.gain.value = 0.6;
+    reverbNode = aCtx.createConvolver();
+    createReverbImpulse();
+    masterGain.connect(aCtx.destination);
+    masterGain.connect(reverbNode);
+    reverbNode.connect(aCtx.destination);
+    if(aCtx.state === 'suspended') aCtx.resume();
+    buildKeyboard();
+
+    window.addEventListener('keydown', e => {
+      if(e.repeat) return;
+      const k = e.key.toLowerCase();
+      if (k >= '0' && k <= '8') {
+        const octNum = parseInt(k); activeOctaves.add(octNum); highlightOctave(octNum, true); return;
+      }
+      if (LETTER_MAP.hasOwnProperty(k)) {
+        const noteOffset = LETTER_MAP[k];
+        if (activeOctaves.size > 0) {
+            activeOctaves.forEach(oct => { triggerNote((oct + 1) * 12 + noteOffset); });
+        }
+      }
+    });
+
+    window.addEventListener('keyup', e => {
+      const k = e.key.toLowerCase();
+      if (k >= '0' && k <= '8') {
+        const octNum = parseInt(k); activeOctaves.delete(octNum); highlightOctave(octNum, false);
+      }
+    });
+  }
+
+  function highlightOctave(octNum, isActive) {
+    const startMidi = (octNum + 1) * 12;
+    for (let m = startMidi; m <= startMidi + 11; m++) {
+      const key = document.getElementById(`key-${m}`);
+      if (key) {
+        if (isActive) key.classList.add('octave-active');
+        else key.classList.remove('octave-active');
+      }
+    }
+  }
+
+  function createReverbImpulse() {
+    const duration = 2.0, decay = 2.0, rate = aCtx.sampleRate, length = rate * duration;
+    const impulse = aCtx.createBuffer(2, length, rate);
+    const left = impulse.getChannelData(0), right = impulse.getChannelData(1);
+    for (let i = 0; i < length; i++) { 
+        const env = Math.pow(1 - i / length, decay);
+        left[i] = (Math.random() * 2 - 1) * env; right[i] = (Math.random() * 2 - 1) * env; 
+    }
+    reverbNode.buffer = impulse;
+  }
+
+  function buildKeyboard() {
+    const wDiv = document.getElementById('whiteKeys'), bDiv = document.getElementById('blackKeys');
+    wDiv.innerHTML = ''; bDiv.innerHTML = '';
+    const LABELS = { 36:'B', 48:'T', 60:'A', 72:'S' };
+    let wCount = 0;
+    for(let m=21; m<=108; m++) {
+      const name = NOTES[m%12], oct = Math.floor(m/12)-1, isB = name.includes('#');
+      const k = document.createElement('div'); k.id = `key-${m}`;
+      if(!isB) {
+        let html = `<span class="key-tag">${name}${oct}</span><span class="key-tag" style="opacity:0.4">${SOL_MAP[name]}</span>`;
+        if (LABELS[m]) html += `<div class="part-label">${LABELS[m]}</div>`;
+        k.innerHTML = html; k.className = 'key-white'; k.onmousedown = () => triggerNote(m);
+        wDiv.appendChild(k); wCount++;
+      } else {
+        k.innerHTML = `<span class="key-tag">${name}${oct}</span>`;
+        k.className = 'key-black'; k.style.left = `${(wCount * 52) - 17}px`;
+        k.onmousedown = () => triggerNote(m);
+        bDiv.appendChild(k);
+      }
+    }
+  }
+
+  function triggerNote(midi) {
+    if(!aCtx) return;
+    if(aCtx.state === 'suspended') aCtx.resume();
+    playTone(midi, aCtx.currentTime);
+    document.getElementById('noteOut').textContent = NOTES[midi%12] + (Math.floor(midi/12)-1);
+    const el = document.getElementById(`key-${midi}`);
+    if(el) { 
+        el.classList.add('active'); setTimeout(()=>el.classList.remove('active'), 150); 
+        el.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+    }
+  }
+
+  function playTone(midi, time, velocity = 0.8) {
+    const freq = 440 * Math.pow(2, (midi-69)/12);
+    const inst = document.getElementById('instSelect').value;
+    const sustain = document.getElementById('sustainCheck').checked;
+    const t = time;
+    const gainNode = aCtx.createGain();
+    const filterNode = aCtx.createBiquadFilter();
+    gainNode.connect(filterNode); filterNode.connect(masterGain); 
+
+    if (inst === 'piano') {
+        const osc1 = aCtx.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, t);
+        const osc2 = aCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 2, t);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity, t + 0.005);
+        gainNode.gain.exponentialRampToValueAtTime(velocity * 0.4, t + 0.5);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 3.5 : 1.0));
+        osc1.connect(gainNode); osc2.connect(gainNode); osc1.start(t); osc2.start(t); osc1.stop(t+4); osc2.stop(t+4);
+    } else if (inst === 'guitar') {
+        const osc = aCtx.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, t);
+        filterNode.type = 'highpass'; filterNode.frequency.setValueAtTime(1000, t);
+        filterNode.frequency.exponentialRampToValueAtTime(100, t + 0.5);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity, t + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 2.5 : 0.8));
+        osc.connect(gainNode); osc.start(t); osc.stop(t+3);
+    } else if (inst === 'violin') {
+        const osc = aCtx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, t);
+        const vbr = aCtx.createOscillator(); vbr.frequency.value = 5.5; 
+        const vbrG = aCtx.createGain(); vbrG.gain.value = 3; 
+        vbr.connect(vbrG); vbrG.connect(osc.frequency);
+        filterNode.type = 'lowpass'; filterNode.frequency.value = 2000;
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.6, t + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 3.0 : 0.6));
+        vbr.start(t); osc.connect(gainNode); osc.start(t); osc.stop(t+4);
+    } else if (inst === 'strings') {
+        const osc = aCtx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, t);
+        filterNode.type = 'lowpass'; filterNode.frequency.value = 1200;
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.4, t + 0.4);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 4.0 : 1.5));
+        osc.connect(gainNode); osc.start(t); osc.stop(t+5);
+    } else if (inst === 'flute') {
+        const osc = aCtx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, t);
+        const lfo = aCtx.createOscillator(); lfo.frequency.value = 6;
+        const lfoG = aCtx.createGain(); lfoG.gain.value = 0.08;
+        lfo.connect(lfoG); lfoG.connect(gainNode.gain);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.7, t + 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
+        lfo.start(t); osc.connect(gainNode); osc.start(t); osc.stop(t+3);
+    }
+  }
+
+  function toggleMetro() {
+    metroOn = !metroOn; document.getElementById('metroBtn').classList.toggle('active');
+    if(metroOn) { metroTimer = setInterval(playClick, (60 / bpm) * 1000); playClick(); } 
+    else { clearInterval(metroTimer); document.getElementById('metroLight').className = 'metro-light'; }
+  }
+
+  function playClick() {
+    const t = aCtx.currentTime, osc = aCtx.createOscillator(), g = aCtx.createGain();
+    osc.frequency.setValueAtTime(1000, t); g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    osc.connect(g); g.connect(aCtx.destination); osc.start(t); osc.stop(t + 0.08);
+    const l = document.getElementById('metroLight'), lcd = document.getElementById('lcd');
+    l.classList.remove('metro-flash'); void l.offsetWidth; l.classList.add('metro-flash');
+    lcd.classList.remove('lcd-flash'); void lcd.offsetWidth; lcd.classList.add('lcd-flash');
+  }
+
+  function updateBPM(v) { bpm = v; document.getElementById('bpmText').textContent = v + " BPM"; if(metroOn) { clearInterval(metroTimer); metroTimer = setInterval(playClick, (60 / bpm) * 1000); } }
+  function toggleScoreMode() { document.body.classList.toggle('score-active'); document.getElementById('scoreBtn').classList.toggle('active'); }
+  function loadScore(e) { const r = new FileReader(); r.onload = () => { const i = document.getElementById('scoreImg'); i.src = r.result; i.style.display='block'; document.getElementById('hint').style.display='none'; }; r.readAsDataURL(e.target.files[0]); }
+  function setVol(lv) { const v = {1:0.1, 2:0.35, 3:0.65, 4:1.0}[lv]; masterGain.gain.setTargetAtTime(v, aCtx.currentTime, 0.05); for(let i=1; i<=4; i++) document.getElementById(`vol${i}`).classList.toggle('active', i===lv); }
+  function toggleDisplay() { document.getElementById('kbRoot').classList.toggle('hide-tags'); document.getElementById('dToggle').classList.toggle('active'); }
+  function toggleMenu() { const m = document.getElementById('dropdownMenu'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; }
+  function changeInstrument() { const v = document.getElementById('instSelect').value; document.getElementById('instName').textContent = v === 'piano' ? 'PIANO' : v.toUpperCase(); document.getElementById('instIcon').textContent = {piano:'🎹', strings:'🎻', violin:'🎻', flute:'🪈', guitar:'🎸'}[v]; toggleMenu(); }
+</script>
+</body>
+</html>
