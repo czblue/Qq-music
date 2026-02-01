@@ -20,7 +20,7 @@
       --font-family: "Orbitron", "Segoe UI", sans-serif;
       --white-w: 52px;
       --black-w: 34px;
-      --octave-active-bg: #2a0044; /* 深紫色 */
+      --octave-active-bg: #2a0044;
     }
 
     /* --- Themes --- */
@@ -29,7 +29,7 @@
       --text: #000000; --lcd-bg: #FFFFFF; --lcd-border: 4px solid #FF4500;
       --key-white-bg: linear-gradient(to bottom, #ffffff 0%, #f0f8ff 100%);
       --key-black-bg: linear-gradient(to bottom, #333 0%, #333 100%);
-      --octave-active-bg: #ffeb3b; /* 卡通風改用亮黃色 */
+      --octave-active-bg: #ffeb3b;
       --border-radius: 25px; --font-family: "Comic Sans MS", cursive;
     }
     body.theme-pro {
@@ -37,7 +37,7 @@
       --text: #f0f0f0; --lcd-bg: #111; --lcd-border: 1px solid #555;
       --key-white-bg: linear-gradient(to bottom, #fffff0 0%, #ffffff 100%);
       --key-black-bg: linear-gradient(to bottom, #1a1a1a 0%, #000 100%);
-      --octave-active-bg: #222; /* 專業風改用深灰 */
+      --octave-active-bg: #222;
       --border-radius: 2px; --font-family: "Times New Roman", serif;
     }
     body.theme-nature {
@@ -46,7 +46,7 @@
       --lcd-bg: rgba(255,255,255,0.6); --lcd-border: 2px solid #006994;
       --key-white-bg: linear-gradient(to bottom, #f0faff 0%, #ffffff 100%);
       --key-black-bg: linear-gradient(to bottom, #006994 0%, #00334e 100%);
-      --octave-active-bg: #004d40; /* 海洋風改用深海綠 */
+      --octave-active-bg: #004d40;
       --border-radius: 12px; --font-family: "Georgia", serif;
     }
 
@@ -58,7 +58,6 @@
       transition: background 0.8s ease, color 0.3s ease; background-attachment: fixed;
     }
 
-    /* Modal, Header, Buttons (Keep original styles) */
     #themeModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
     .modal-title { font-size: 28px; color: white; margin-bottom: 30px; text-align: center; }
     .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; width: 100%; }
@@ -122,13 +121,11 @@
     
     .key-tag { font-size: 11px; font-weight: bold; pointer-events: none; margin-bottom: 2px; }
     
-    /* PART LABELS (B, T, A, S) */
     .part-label {
       position: absolute; top: 10px; font-size: 18px; font-weight: 900; 
       color: var(--accent); text-shadow: var(--accent-glow); pointer-events: none;
     }
     
-    /* OCTAVE ACTIVE VISUAL */
     .octave-active {
       background: var(--octave-active-bg) !important;
       box-shadow: inset 0 0 20px var(--accent);
@@ -172,14 +169,13 @@
     <div class="header-right">
       <button class="theme-switch-btn" onclick="openThemeModal()">🎨 Theme</button>
       <div id="scoreBtn" class="mode-btn" onclick="toggleScoreMode()">Score</div>
-      <div id="accompBtn" class="mode-btn" onclick="toggleAccomp()">Accomp</div>
       <div class="metro-controls">
         <div id="metroBtn" class="mode-btn" onclick="toggleMetro()">Metro</div>
         <input type="range" class="bpm-slider" min="40" max="220" value="120" oninput="updateBPM(this.value)">
         <span class="bpm-text" id="bpmText">120 BPM</span>
       </div>
       <div class="vol-stack">
-        <div class="vol-label">VOICE</div>
+        <div class="vol-label">Volume</div>
         <div class="vol-grid">
           <div class="vol-segment" id="vol1" onclick="setVol(1)"></div>
           <div class="vol-segment" id="vol2" onclick="setVol(2)"></div>
@@ -194,11 +190,11 @@
     <div id="dropdownMenu">
       <label>Instrument:</label>
       <select id="instSelect" onchange="changeInstrument()" style="padding:10px; background:#222; color:white; border:1px solid var(--accent); font-size: 16px;">
-        <option value="piano">Grand Piano 🎹</option>
-        <option value="violin">Solo Violin 🎻</option>
-        <option value="strings">Orchestra 🎻</option>
-        <option value="flute">Concert Flute 🪈</option>
-        <option value="guitar">Nylon Guitar 🎸</option>
+        <option value="piano">Piano 🎹</option>
+        <option value="violin">Violin 🎻</option>
+        <option value="strings">Strings 🎻</option>
+        <option value="flute">Flute 🪈</option>
+        <option value="guitar">Guitar 🎸</option>
       </select>
       <hr style="border-color:#333;">
       <label style="cursor: pointer;"><input type="checkbox" id="sustainCheck" checked> Sustain</label>
@@ -229,23 +225,17 @@
 
   <div class="instrument-display">
     <div id="instIcon" style="font-size:50px;">🎹</div>
-    <div id="instName" style="font-size:30px; font-weight:bold; color:var(--accent);">GRAND PIANO</div>
+    <div id="instName" style="font-size:30px; font-weight:bold; color:var(--accent);">PIANO</div>
   </div>
 
 <script>
   let aCtx, masterGain, reverbNode;
   const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   const SOL_MAP = { 'C':'Do', 'C#':'Di', 'D':'Re', 'D#':'Ri', 'E':'Mi', 'F':'Fa', 'F#':'Fi', 'G':'Sol', 'G#':'Si', 'A':'La', 'A#':'Li', 'B':'Si' };
-  let accompOn = false, metroOn = false, bpm = 120, metroTimer;
+  let metroOn = false, bpm = 120, metroTimer;
 
-  // --- Coordinate Control Variables ---
-  const activeOctaves = new Set(); // Stores 0-8
-  const LETTER_MAP = {
-    'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11
-  };
-  const PART_LABELS = { 24: 'B', 36: 'T', 48: 'A', 60: 'S' }; // C1(24) isn't requested, but logic is C2(36)=B, C3(48)=T, C4(60)=A, C5(72)=S. 
-  // Wait, standard C4 is 60. 
-  // C2=36 (Bass), C3=48 (Tenor), C4=60 (Alto), C5=72 (Soprano).
+  const activeOctaves = new Set(); 
+  const LETTER_MAP = { 'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11 };
   
   function selectTheme(themeName) {
     document.body.className = ''; document.body.classList.add(themeName); document.body.classList.add('show-labels'); 
@@ -258,38 +248,24 @@
   function initApp() {
     aCtx = new (window.AudioContext || window.webkitAudioContext)();
     masterGain = aCtx.createGain(); masterGain.gain.value = 0.6;
-    
     reverbNode = aCtx.createConvolver();
     createReverbImpulse();
     masterGain.connect(aCtx.destination);
     masterGain.connect(reverbNode);
     reverbNode.connect(aCtx.destination);
-    
     if(aCtx.state === 'suspended') aCtx.resume();
     buildKeyboard();
 
-    // --- NEW: Coordinate Control Listeners ---
     window.addEventListener('keydown', e => {
       if(e.repeat) return;
       const k = e.key.toLowerCase();
-
-      // 1. Number Keys (Octave Selection)
       if (k >= '0' && k <= '8') {
-        const octNum = parseInt(k);
-        activeOctaves.add(octNum);
-        highlightOctave(octNum, true);
-        return;
+        const octNum = parseInt(k); activeOctaves.add(octNum); highlightOctave(octNum, true); return;
       }
-
-      // 2. Letter Keys (Note Trigger)
       if (LETTER_MAP.hasOwnProperty(k)) {
         const noteOffset = LETTER_MAP[k];
-        // Iterate all active octaves and play
         if (activeOctaves.size > 0) {
-            activeOctaves.forEach(oct => {
-                const midi = (oct + 1) * 12 + noteOffset;
-                triggerNote(midi);
-            });
+            activeOctaves.forEach(oct => { triggerNote((oct + 1) * 12 + noteOffset); });
         }
       }
     });
@@ -297,17 +273,14 @@
     window.addEventListener('keyup', e => {
       const k = e.key.toLowerCase();
       if (k >= '0' && k <= '8') {
-        const octNum = parseInt(k);
-        activeOctaves.delete(octNum);
-        highlightOctave(octNum, false);
+        const octNum = parseInt(k); activeOctaves.delete(octNum); highlightOctave(octNum, false);
       }
     });
   }
 
   function highlightOctave(octNum, isActive) {
     const startMidi = (octNum + 1) * 12;
-    const endMidi = startMidi + 11;
-    for (let m = startMidi; m <= endMidi; m++) {
+    for (let m = startMidi; m <= startMidi + 11; m++) {
       const key = document.getElementById(`key-${m}`);
       if (key) {
         if (isActive) key.classList.add('octave-active');
@@ -317,35 +290,28 @@
   }
 
   function createReverbImpulse() {
-    const duration = 2.0; const decay = 2.0; const rate = aCtx.sampleRate; const length = rate * duration;
+    const duration = 2.0, decay = 2.0, rate = aCtx.sampleRate, length = rate * duration;
     const impulse = aCtx.createBuffer(2, length, rate);
     const left = impulse.getChannelData(0), right = impulse.getChannelData(1);
-    for (let i = 0; i < length; i++) { const n = i/length; const env = Math.pow(1-n, decay); left[i]=(Math.random()*2-1)*env; right[i]=(Math.random()*2-1)*env; }
+    for (let i = 0; i < length; i++) { 
+        const env = Math.pow(1 - i / length, decay);
+        left[i] = (Math.random() * 2 - 1) * env; right[i] = (Math.random() * 2 - 1) * env; 
+    }
     reverbNode.buffer = impulse;
   }
 
   function buildKeyboard() {
     const wDiv = document.getElementById('whiteKeys'), bDiv = document.getElementById('blackKeys');
     wDiv.innerHTML = ''; bDiv.innerHTML = '';
-    
-    // Requested marks: C2=B, C3=T, C4=A, C5=S. 
-    // Midi: C2=36, C3=48, C4=60, C5=72
     const LABELS = { 36:'B', 48:'T', 60:'A', 72:'S' };
-
     let wCount = 0;
     for(let m=21; m<=108; m++) {
       const name = NOTES[m%12], oct = Math.floor(m/12)-1, isB = name.includes('#');
-      const k = document.createElement('div');
-      k.id = `key-${m}`;
-      
+      const k = document.createElement('div'); k.id = `key-${m}`;
       if(!isB) {
         let html = `<span class="key-tag">${name}${oct}</span><span class="key-tag" style="opacity:0.4">${SOL_MAP[name]}</span>`;
-        // Add special part label if applicable
-        if (LABELS[m]) {
-            html += `<div class="part-label">${LABELS[m]}</div>`;
-        }
-        k.innerHTML = html;
-        k.className = 'key-white'; k.onmousedown = () => triggerNote(m);
+        if (LABELS[m]) html += `<div class="part-label">${LABELS[m]}</div>`;
+        k.innerHTML = html; k.className = 'key-white'; k.onmousedown = () => triggerNote(m);
         wDiv.appendChild(k); wCount++;
       } else {
         k.innerHTML = `<span class="key-tag">${name}${oct}</span>`;
@@ -359,21 +325,11 @@
   function triggerNote(midi) {
     if(!aCtx) return;
     if(aCtx.state === 'suspended') aCtx.resume();
-    const now = aCtx.currentTime;
-    playTone(midi, now);
-    
-    if(accompOn && midi < 60) {
-      setTimeout(() => playTone(midi+4, now+0.05, 0.4), 50);
-      setTimeout(() => playTone(midi+7, now+0.1, 0.4), 100);
-      setTimeout(() => playTone(midi+12, now+0.15, 0.3), 150);
-    }
-    
+    playTone(midi, aCtx.currentTime);
     document.getElementById('noteOut').textContent = NOTES[midi%12] + (Math.floor(midi/12)-1);
     const el = document.getElementById(`key-${midi}`);
     if(el) { 
-        el.classList.add('active'); 
-        setTimeout(()=>el.classList.remove('active'), 150); 
-        // Auto scroll to active note
+        el.classList.add('active'); setTimeout(()=>el.classList.remove('active'), 150); 
         el.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
     }
   }
@@ -382,70 +338,78 @@
     const freq = 440 * Math.pow(2, (midi-69)/12);
     const inst = document.getElementById('instSelect').value;
     const sustain = document.getElementById('sustainCheck').checked;
-    
     const t = time;
     const gainNode = aCtx.createGain();
     const filterNode = aCtx.createBiquadFilter();
-    
-    gainNode.connect(filterNode);
-    filterNode.connect(masterGain); 
+    gainNode.connect(filterNode); filterNode.connect(masterGain); 
 
     if (inst === 'piano') {
-        const osc1 = aCtx.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, t); osc1.connect(gainNode);
-        const osc2 = aCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 1.001, t); osc2.connect(gainNode);
-        const osc3 = aCtx.createOscillator(); osc3.type = 'sine'; osc3.frequency.setValueAtTime(freq * 0.5, t); 
-        const clickGain = aCtx.createGain(); clickGain.gain.setValueAtTime(0.3, t); clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-        osc3.connect(clickGain); clickGain.connect(filterNode);
-
-        filterNode.type = 'lowpass'; filterNode.Q.value = 0.5; filterNode.frequency.setValueAtTime(2500, t); filterNode.frequency.exponentialRampToValueAtTime(300, t + 1.5);
-        gainNode.gain.setValueAtTime(0, t); gainNode.gain.linearRampToValueAtTime(velocity, t + 0.015); 
-        gainNode.gain.exponentialRampToValueAtTime(velocity * 0.6, t + 0.3); gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 3.0 : 0.8));
-        osc1.start(t); osc2.start(t); osc3.start(t); osc1.stop(t+4); osc2.stop(t+4); osc3.stop(t+0.1);
+        const osc1 = aCtx.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, t);
+        const osc2 = aCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 2, t);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity, t + 0.005);
+        gainNode.gain.exponentialRampToValueAtTime(velocity * 0.4, t + 0.5);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 3.5 : 1.0));
+        osc1.connect(gainNode); osc2.connect(gainNode); osc1.start(t); osc2.start(t); osc1.stop(t+4); osc2.stop(t+4);
+    } else if (inst === 'guitar') {
+        const osc = aCtx.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, t);
+        filterNode.type = 'highpass'; filterNode.frequency.setValueAtTime(1000, t);
+        filterNode.frequency.exponentialRampToValueAtTime(100, t + 0.5);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity, t + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 2.5 : 0.8));
+        osc.connect(gainNode); osc.start(t); osc.stop(t+3);
     } else if (inst === 'violin') {
-        const osc = aCtx.createOscillator(); osc.type = 'sawtooth';
-        const lfo = aCtx.createOscillator(); lfo.frequency.value = 6; const lfoGain = aCtx.createGain(); lfoGain.gain.value = 3; lfo.connect(lfoGain); lfoGain.connect(osc.frequency); lfo.start(t);
-        osc.frequency.setValueAtTime(freq, t); osc.connect(gainNode);
+        const osc = aCtx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, t);
+        const vbr = aCtx.createOscillator(); vbr.frequency.value = 5.5; 
+        const vbrG = aCtx.createGain(); vbrG.gain.value = 3; 
+        vbr.connect(vbrG); vbrG.connect(osc.frequency);
         filterNode.type = 'lowpass'; filterNode.frequency.value = 2000;
-        gainNode.gain.setValueAtTime(0, t); gainNode.gain.linearRampToValueAtTime(velocity * 0.7, t + 0.1); gainNode.gain.setValueAtTime(velocity * 0.7, t + 0.5); gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 2.5 : 0.5));
-        osc.start(t); osc.stop(t+4);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.6, t + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 3.0 : 0.6));
+        vbr.start(t); osc.connect(gainNode); osc.start(t); osc.stop(t+4);
+    } else if (inst === 'strings') {
+        const osc = aCtx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, t);
+        filterNode.type = 'lowpass'; filterNode.frequency.value = 1200;
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.4, t + 0.4);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + (sustain ? 4.0 : 1.5));
+        osc.connect(gainNode); osc.start(t); osc.stop(t+5);
     } else if (inst === 'flute') {
         const osc = aCtx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, t);
-        const lfo = aCtx.createOscillator(); lfo.frequency.value = 5; const lfoGain = aCtx.createGain(); lfoGain.gain.value = 0.1; lfo.connect(lfoGain); lfoGain.connect(gainNode.gain); lfo.start(t);
-        osc.connect(gainNode);
-        gainNode.gain.setValueAtTime(0, t); gainNode.gain.linearRampToValueAtTime(velocity * 0.8, t + 0.1); gainNode.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
-        osc.start(t); osc.stop(t+3);
-    } else {
-        const osc = aCtx.createOscillator(); osc.type = inst === 'guitar' ? 'triangle' : 'sawtooth'; osc.frequency.setValueAtTime(freq, t); osc.connect(gainNode);
-        filterNode.frequency.value = 2000;
-        gainNode.gain.setValueAtTime(0, t); gainNode.gain.linearRampToValueAtTime(velocity, t + 0.05); gainNode.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
-        osc.start(t); osc.stop(t+3);
+        const lfo = aCtx.createOscillator(); lfo.frequency.value = 6;
+        const lfoG = aCtx.createGain(); lfoG.gain.value = 0.08;
+        lfo.connect(lfoG); lfoG.connect(gainNode.gain);
+        gainNode.gain.setValueAtTime(0, t);
+        gainNode.gain.linearRampToValueAtTime(velocity * 0.7, t + 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
+        lfo.start(t); osc.connect(gainNode); osc.start(t); osc.stop(t+3);
     }
   }
 
   function toggleMetro() {
     metroOn = !metroOn; document.getElementById('metroBtn').classList.toggle('active');
-    if(aCtx && aCtx.state === 'suspended') aCtx.resume();
-    if(metroOn) { clearInterval(metroTimer); metroTimer = setInterval(playClick, (60 / bpm) * 1000); playClick(); } 
-    else { clearInterval(metroTimer); document.getElementById('metroLight').className = 'metro-light'; document.getElementById('lcd').classList.remove('lcd-flash'); }
+    if(metroOn) { metroTimer = setInterval(playClick, (60 / bpm) * 1000); playClick(); } 
+    else { clearInterval(metroTimer); document.getElementById('metroLight').className = 'metro-light'; }
   }
 
   function playClick() {
-    const time = aCtx.currentTime; const osc = aCtx.createOscillator(); const g = aCtx.createGain();
-    osc.frequency.setValueAtTime(1000, time); g.gain.setValueAtTime(0.8, time); g.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
-    osc.connect(g); g.connect(aCtx.destination); osc.start(time); osc.stop(time + 0.08);
-    const light = document.getElementById('metroLight'); const lcd = document.getElementById('lcd');
-    light.classList.remove('metro-flash'); lcd.classList.remove('lcd-flash');
-    void light.offsetWidth; light.classList.add('metro-flash'); lcd.classList.add('lcd-flash');
+    const t = aCtx.currentTime, osc = aCtx.createOscillator(), g = aCtx.createGain();
+    osc.frequency.setValueAtTime(1000, t); g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    osc.connect(g); g.connect(aCtx.destination); osc.start(t); osc.stop(t + 0.08);
+    const l = document.getElementById('metroLight'), lcd = document.getElementById('lcd');
+    l.classList.remove('metro-flash'); void l.offsetWidth; l.classList.add('metro-flash');
+    lcd.classList.remove('lcd-flash'); void lcd.offsetWidth; lcd.classList.add('lcd-flash');
   }
 
   function updateBPM(v) { bpm = v; document.getElementById('bpmText').textContent = v + " BPM"; if(metroOn) { clearInterval(metroTimer); metroTimer = setInterval(playClick, (60 / bpm) * 1000); } }
   function toggleScoreMode() { document.body.classList.toggle('score-active'); document.getElementById('scoreBtn').classList.toggle('active'); }
   function loadScore(e) { const r = new FileReader(); r.onload = () => { const i = document.getElementById('scoreImg'); i.src = r.result; i.style.display='block'; document.getElementById('hint').style.display='none'; }; r.readAsDataURL(e.target.files[0]); }
-  function toggleAccomp() { accompOn = !accompOn; document.getElementById('accompBtn').classList.toggle('active'); }
   function setVol(lv) { const v = {1:0.1, 2:0.35, 3:0.65, 4:1.0}[lv]; masterGain.gain.setTargetAtTime(v, aCtx.currentTime, 0.05); for(let i=1; i<=4; i++) document.getElementById(`vol${i}`).classList.toggle('active', i===lv); }
   function toggleDisplay() { document.getElementById('kbRoot').classList.toggle('hide-tags'); document.getElementById('dToggle').classList.toggle('active'); }
   function toggleMenu() { const m = document.getElementById('dropdownMenu'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; }
-  function changeInstrument() { const v = document.getElementById('instSelect').value; document.getElementById('instName').textContent = v === 'piano' ? 'GRAND PIANO' : v.toUpperCase(); document.getElementById('instIcon').textContent = {piano:'🎹', strings:'🎻', violin:'🎻', flute:'🪈', guitar:'🎸'}[v]; toggleMenu(); }
+  function changeInstrument() { const v = document.getElementById('instSelect').value; document.getElementById('instName').textContent = v === 'piano' ? 'PIANO' : v.toUpperCase(); document.getElementById('instIcon').textContent = {piano:'🎹', strings:'🎻', violin:'🎻', flute:'🪈', guitar:'🎸'}[v]; toggleMenu(); }
 </script>
 </body>
 </html>
